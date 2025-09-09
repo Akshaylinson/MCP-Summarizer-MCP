@@ -1,1 +1,255 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Summarizer</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom styles -->
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .summary-card {
+      transition: all 0.3s ease;
+    }
+    .summary-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .loader {
+      border-top-color: #3498db;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="gradient-bg text-white shadow-lg">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-file-alt text-3xl"></i>
+          <h1 class="text-3xl font-bold">MCP Summarizer</h1>
+        </div>
+        <div class="hidden md:block">
+          <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">AI-Powered</span>
+        </div>
+      </div>
+      <p class="mt-4 text-lg opacity-90">Transform lengthy text into concise summaries with our advanced AI technology</p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8 -mt-10">
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <div class="flex items-center mb-4">
+        <i class="fas fa-keyboard text-blue-500 mr-2"></i>
+        <h2 class="text-xl font-semibold text-gray-800">Input Text</h2>
+      </div>
+      <textarea id="text" rows="10" class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Paste your long text here..."></textarea>
+      
+      <div class="flex justify-between items-center mt-4">
+        <div class="text-sm text-gray-500">
+          <span id="char-count">0</span> characters
+        </div>
+        <button id="go" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg flex items-center transition shadow-md hover:shadow-lg">
+          <i class="fas fa-sparkles mr-2"></i> Summarize
+        </button>
+      </div>
+    </div>
+
+    <div id="progress-section" class="hidden bg-white rounded-xl shadow-lg p-6 mb-8">
+      <div class="flex items-center mb-4">
+        <i class="fas fa-tasks text-blue-500 mr-2"></i>
+        <h2 class="text-xl font-semibold text-gray-800">Processing</h2>
+      </div>
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+        <p class="text-gray-600" id="progress-text">Analyzing your text...</p>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+          <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="results-section" class="hidden">
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8 summary-card">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-file-contract text-green-500 mr-2"></i>
+          <h2 class="text-xl font-semibold text-gray-800">Summary</h2>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div id="out" class="text-gray-700 whitespace-pre-wrap">—</div>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button id="copy-btn" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg flex items-center transition">
+            <i class="far fa-copy mr-2"></i> Copy
+          </button>
+        </div>
+      </div>
+
+      <div id="chunk-info" class="bg-white rounded-xl shadow-lg p-6 summary-card">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-layer-group text-purple-500 mr-2"></i>
+          <h2 class="text-xl font-semibold text-gray-800">Processing Details</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="text-blue-800 font-medium">Text Analysis</div>
+            <div class="mt-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total chunks processed:</span>
+                <span id="chunk-count" class="font-medium">0</span>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-gray-600">Characters analyzed:</span>
+                <span id="total-chars" class="font-medium">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <div class="text-purple-800 font-medium">AI Model</div>
+            <div class="mt-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Model:</span>
+                <span class="font-medium">Ollama LLM</span>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-gray-600">Method:</span>
+                <span class="font-medium">Hierarchical</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="error-section" class="hidden bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+      <div class="flex items-center mb-2">
+        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+        <h2 class="text-xl font-semibold text-red-800">Error</h2>
+      </div>
+      <p id="error-message" class="text-red-700"></p>
+    </div>
+  </main>
+
+  <footer class="bg-gray-800 text-white py-8 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>MCP Summarizer - AI-Powered Text Analysis</p>
+      <p class="text-gray-400 text-sm mt-2">Powered by Ollama LLM Technology</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const textInput = document.getElementById('text');
+      const charCount = document.getElementById('char-count');
+      const goButton = document.getElementById('go');
+      const output = document.getElementById('out');
+      const progressSection = document.getElementById('progress-section');
+      const resultsSection = document.getElementById('results-section');
+      const errorSection = document.getElementById('error-section');
+      const errorMessage = document.getElementById('error-message');
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      const chunkCount = document.getElementById('chunk-count');
+      const totalChars = document.getElementById('total-chars');
+      const copyButton = document.getElementById('copy-btn');
+      const chunkInfo = document.getElementById('chunk-info');
+
+      // Update character count
+      textInput.addEventListener('input', function() {
+        charCount.textContent = this.value.length;
+      });
+
+      // Copy summary to clipboard
+      copyButton.addEventListener('click', function() {
+        const summaryText = output.textContent;
+        navigator.clipboard.writeText(summaryText).then(function() {
+          const originalHtml = copyButton.innerHTML;
+          copyButton.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+          setTimeout(function() {
+            copyButton.innerHTML = originalHtml;
+          }, 2000);
+        });
+      });
+
+      // Summarize button click
+      goButton.addEventListener('click', async () => {
+        const text = textInput.value.trim();
+        if (!text) {
+          showError('Please paste some text to summarize.');
+          return;
+        }
+        
+        // Hide any previous results/errors
+        resultsSection.classList.add('hidden');
+        errorSection.classList.add('hidden');
+        
+        // Show progress
+        progressSection.classList.remove('hidden');
+        updateProgress(10, "Processing text chunks...");
+        
+        const form = new URLSearchParams();
+        form.append('text', text);
+        
+        try {
+          updateProgress(30, "Connecting to AI model...");
+          
+          const res = await fetch('/summarize', {
+            method: 'POST',
+            body: form,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          });
+          
+          updateProgress(70, "Generating summary...");
+          
+          const data = await res.json();
+          
+          if (data.summary) {
+            output.textContent = data.summary;
+            chunkCount.textContent = data.chunks;
+            totalChars.textContent = text.length;
+            
+            // Show results
+            progressSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            
+            // Show chunk info if there were multiple chunks
+            if (data.chunks > 1) {
+              chunkInfo.classList.remove('hidden');
+            } else {
+              chunkInfo.classList.add('hidden');
+            }
+            
+          } else {
+            showError('Error: ' + (data.error || 'Unknown error occurred'));
+            progressSection.classList.add('hidden');
+          }
+        } catch (err) {
+          showError('Network error: ' + err);
+          progressSection.classList.add('hidden');
+        }
+      });
+
+      function updateProgress(percent, text) {
+        progressBar.style.width = percent + '%';
+        progressText.textContent = text;
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorSection.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
