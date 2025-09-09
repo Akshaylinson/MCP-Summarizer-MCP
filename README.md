@@ -1,8 +1,6 @@
 MCP Summarizer
 A professional AI-powered text summarization tool built with Flask and Ollama LLM, featuring a modern responsive interface designed with Tailwind CSS.
 
-https://img.shields.io/badge/Version-1.0.0-blue.svg https://img.shields.io/badge/Python-3.8%252B-green.svg https://img.shields.io/badge/Flask-2.3.3-lightgrey.svg https://img.shields.io/badge/License-MIT-yellow.svg
-
 ✨ Features
 AI-Powered Summarization: Utilizes Ollama's language models for high-quality text summarization
 
